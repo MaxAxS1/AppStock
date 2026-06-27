@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/white"/>
+    <foreground>
+        <inset android:inset="16%">
+            <path
+                android:fillColor="#1E3A8A"
+                android:pathData="M12,2L2,7L12,12L22,7L12,2Z M2,17L12,22L22,17L22,12L12,17L2,12L2,17Z"/>
+        </inset>
+    </foreground>
+</adaptive-icon>
