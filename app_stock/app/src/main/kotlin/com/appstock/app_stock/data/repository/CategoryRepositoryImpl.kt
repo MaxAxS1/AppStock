@@ -16,13 +16,14 @@ class CategoryRepositoryImpl(
 
     private fun getCollection() = firestore
         .collection("stores")
-        .document(SessionManager.getStoreId())
+        .document(SessionManager.getStoreIdOrNull() ?: throw IllegalStateException("No hay un storeId en sesión."))
         .collection("categories")
 
     override fun getCategories(): Flow<List<Category>> = callbackFlow {
-        val subscription = getCollection().addSnapshotListener { snapshot, error ->
+        val subscription = getCollection().limit(200).addSnapshotListener { snapshot, error ->
             if (error != null) {
-                close(error)
+                android.util.Log.e("CategoryRepo", "Error escuchando categorías", error)
+                trySend(emptyList())
                 return@addSnapshotListener
             }
             if (snapshot != null) {
@@ -54,14 +55,17 @@ class CategoryRepositoryImpl(
     }
 
     override suspend fun addCategory(category: Category): Result<Unit> = try {
+        require(category.name.isNotBlank()) { "El nombre de la categoría es obligatorio." }
         val doc = getCollection().document()
-        getCollection().document(doc.id).set(category.copy(id = doc.id)).await()
+        doc.set(category.copy(id = doc.id)).await()
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
     }
 
     override suspend fun updateCategory(category: Category): Result<Unit> = try {
+        require(category.id.isNotBlank()) { "ID de categoría vacío." }
+        require(category.name.isNotBlank()) { "El nombre de la categoría es obligatorio." }
         getCollection().document(category.id).set(category).await()
         Result.success(Unit)
     } catch (e: Exception) {

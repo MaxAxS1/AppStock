@@ -40,11 +40,11 @@ fun ReportsScreen(viewModel: ReportViewModel, navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(OrangeSurface)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         if (isLoading || report == null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = OrangeRed)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else {
             val r = report!!
@@ -59,7 +59,7 @@ fun ReportsScreen(viewModel: ReportViewModel, navController: NavController) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                Brush.verticalGradient(listOf(OrangeRed, OrangeLight))
+                                Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary))
                             )
                             .padding(horizontal = 20.dp, vertical = 20.dp)
                     ) {
@@ -69,18 +69,18 @@ fun ReportsScreen(viewModel: ReportViewModel, navController: NavController) {
                                     onClick = { navController.popBackStack() },
                                     modifier = Modifier.padding(end = 8.dp)
                                 ) {
-                                    Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = White)
+                                    Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.onPrimary)
                                 }
                                 Text(
                                     "Estadísticas",
-                                    color = White,
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                     fontSize = 22.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                             Text(
                                 "Resumen de tu inventario",
-                                color = White.copy(alpha = 0.8f),
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
                                 fontSize = 13.sp,
                                 modifier = Modifier.padding(start = 48.dp)
                             )
@@ -90,16 +90,16 @@ fun ReportsScreen(viewModel: ReportViewModel, navController: NavController) {
 
                 // ── Tabs ──────────────────────────────────────────────────────
                 item {
-                    Surface(color = White, shadowElevation = 2.dp) {
+                    Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 2.dp) {
                         ScrollableTabRow(
                             selectedTabIndex = selectedTab,
-                            containerColor = White,
-                            contentColor = OrangeRed,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.primary,
                             edgePadding = 16.dp,
                             indicator = { tabPositions ->
                                 TabRowDefaults.Indicator(
                                     modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                                    color = OrangeRed,
+                                    color = MaterialTheme.colorScheme.primary,
                                     height = 3.dp
                                 )
                             }
@@ -116,8 +116,8 @@ fun ReportsScreen(viewModel: ReportViewModel, navController: NavController) {
                                             fontSize = 14.sp
                                         )
                                     },
-                                    selectedContentColor = OrangeRed,
-                                    unselectedContentColor = MediumGray
+                                    selectedContentColor = MaterialTheme.colorScheme.primary,
+                                    unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -141,7 +141,7 @@ fun ReportsScreen(viewModel: ReportViewModel, navController: NavController) {
                                     label = "Ganancia potencial",
                                     value = formatMoney(r.valueReport.potentialProfit),
                                     subtitle = "Si vendieras todo el stock actual",
-                                    gradientColors = listOf(OrangeRed, OrangeLight),
+                                    gradientColors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary),
                                     icon = Icons.Default.TrendingUp
                                 )
                                 Row(
@@ -192,7 +192,7 @@ fun ReportsScreen(viewModel: ReportViewModel, navController: NavController) {
                                         start = 16.dp, end = 16.dp,
                                         top = 24.dp, bottom = 8.dp
                                     ),
-                                    titleColor = ErrorRed
+                                    titleColor = MaterialTheme.colorScheme.error
                                 )
                             }
                             items(r.outOfStockProducts) { name ->
@@ -208,7 +208,7 @@ fun ReportsScreen(viewModel: ReportViewModel, navController: NavController) {
                             Text(
                                 "Top 5 por valor en inventario",
                                 fontSize = 13.sp,
-                                color = MediumGray,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                             )
                         }
@@ -229,7 +229,7 @@ fun ReportsScreen(viewModel: ReportViewModel, navController: NavController) {
                             Text(
                                 "Ganancia potencial por día de carga",
                                 fontSize = 13.sp,
-                                color = MediumGray,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                             )
                         }
@@ -250,14 +250,14 @@ fun ReportsScreen(viewModel: ReportViewModel, navController: NavController) {
                                         .padding(16.dp)
                                         .shadow(6.dp, RoundedCornerShape(20.dp)),
                                     shape = RoundedCornerShape(20.dp),
-                                    colors = CardDefaults.cardColors(containerColor = White)
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                                 ) {
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .background(
                                                 Brush.horizontalGradient(
-                                                    listOf(OrangeRed, OrangeLight)
+                                                    listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
                                                 )
                                             )
                                             .padding(20.dp),
@@ -267,12 +267,12 @@ fun ReportsScreen(viewModel: ReportViewModel, navController: NavController) {
                                         Column {
                                             Text(
                                                 "Ganancia total acumulada",
-                                                color = White.copy(alpha = 0.85f),
+                                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
                                                 fontSize = 13.sp
                                             )
                                             Text(
                                                 formatMoney(total),
-                                                color = White,
+                                                color = MaterialTheme.colorScheme.onPrimary,
                                                 fontSize = 26.sp,
                                                 fontWeight = FontWeight.ExtraBold
                                             )
@@ -280,7 +280,7 @@ fun ReportsScreen(viewModel: ReportViewModel, navController: NavController) {
                                         Icon(
                                             Icons.Default.TrendingUp,
                                             contentDescription = null,
-                                            tint = White,
+                                            tint = MaterialTheme.colorScheme.onPrimary,
                                             modifier = Modifier.size(36.dp)
                                         )
                                     }
@@ -319,23 +319,23 @@ private fun ValueBigCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(label, color = White.copy(alpha = 0.85f), fontSize = 13.sp)
+                Text(label, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f), fontSize = 13.sp)
                 Text(
                     value,
-                    color = White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 30.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
-                Text(subtitle, color = White.copy(alpha = 0.7f), fontSize = 11.sp)
+                Text(subtitle, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f), fontSize = 11.sp)
             }
             Box(
                 modifier = Modifier
                     .size(56.dp)
                     .clip(CircleShape)
-                    .background(White.copy(alpha = 0.2f)),
+                    .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null, tint = White, modifier = Modifier.size(30.dp))
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(30.dp))
             }
         }
     }
@@ -352,7 +352,7 @@ private fun SmallStatCard(
     Card(
         modifier = modifier.shadow(4.dp, RoundedCornerShape(18.dp)),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Box(
@@ -365,8 +365,8 @@ private fun SmallStatCard(
                 Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(20.dp))
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(value, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = DarkText)
-            Text(label, fontSize = 11.sp, color = MediumGray)
+            Text(value, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -375,7 +375,7 @@ private fun SmallStatCard(
 private fun SectionHeader(
     title: String,
     modifier: Modifier = Modifier,
-    titleColor: Color = DarkText
+    titleColor: Color = MaterialTheme.colorScheme.onBackground
 ) {
     Text(
         title,
@@ -398,7 +398,7 @@ private fun CategoryProgressRow(report: CategoryReport, maxStock: Int) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(
@@ -409,13 +409,13 @@ private fun CategoryProgressRow(report: CategoryReport, maxStock: Int) {
                     report.categoryName.ifBlank { "Sin categoría" },
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
-                    color = DarkText
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     "${report.totalStock} uds",
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
-                    color = OrangeRed
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
             Spacer(modifier = Modifier.height(6.dp))
@@ -425,15 +425,15 @@ private fun CategoryProgressRow(report: CategoryReport, maxStock: Int) {
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
-                color = OrangeRed,
-                trackColor = OrangeChip,
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.primaryContainer,
                 strokeCap = StrokeCap.Round
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 "${report.productCount} productos",
                 fontSize = 11.sp,
-                color = MediumGray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -446,18 +446,18 @@ private fun OutOfStockRow(name: String) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(ErrorRed.copy(alpha = 0.06f))
+            .background(MaterialTheme.colorScheme.error.copy(alpha = 0.06f))
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             Icons.Default.RemoveShoppingCart,
             contentDescription = null,
-            tint = ErrorRed,
+            tint = MaterialTheme.colorScheme.error,
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(10.dp))
-        Text(name, fontSize = 14.sp, color = DarkText, fontWeight = FontWeight.Medium)
+        Text(name, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -474,7 +474,7 @@ private fun TopProductRow(product: TopProduct, rank: Int, maxValue: Double) {
             .padding(horizontal = 16.dp, vertical = 5.dp)
             .shadow(3.dp, RoundedCornerShape(18.dp)),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier.padding(14.dp).fillMaxWidth(),
@@ -485,14 +485,14 @@ private fun TopProductRow(product: TopProduct, rank: Int, maxValue: Double) {
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
-                    .background(if (rank == 1) OrangeRed else OrangeChip),
+                    .background(if (rank == 1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     "#$rank",
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp,
-                    color = if (rank == 1) White else OrangeRed
+                    color = if (rank == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
@@ -501,13 +501,13 @@ private fun TopProductRow(product: TopProduct, rank: Int, maxValue: Double) {
                     product.nombre,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
-                    color = DarkText,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1
                 )
                 Text(
                     product.marca.ifBlank { "Sin marca" } + " · ${product.stock} uds",
                     fontSize = 11.sp,
-                    color = MediumGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 LinearProgressIndicator(
@@ -516,8 +516,8 @@ private fun TopProductRow(product: TopProduct, rank: Int, maxValue: Double) {
                         .fillMaxWidth()
                         .height(5.dp)
                         .clip(RoundedCornerShape(3.dp)),
-                    color = OrangeRed,
-                    trackColor = OrangeChip,
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.primaryContainer,
                     strokeCap = StrokeCap.Round
                 )
             }
@@ -526,7 +526,7 @@ private fun TopProductRow(product: TopProduct, rank: Int, maxValue: Double) {
                 formatMoney(product.stockValue),
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 14.sp,
-                color = OrangeRed
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -544,7 +544,7 @@ private fun DailyProfitRow(daily: DailyProfit, maxProfit: Double) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 5.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier.padding(14.dp).fillMaxWidth(),
@@ -554,14 +554,14 @@ private fun DailyProfitRow(daily: DailyProfit, maxProfit: Double) {
                 modifier = Modifier
                     .size(42.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(OrangeChip),
+                    .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     daily.date,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = OrangeRed
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
@@ -572,8 +572,8 @@ private fun DailyProfitRow(daily: DailyProfit, maxProfit: Double) {
                         .fillMaxWidth()
                         .height(6.dp)
                         .clip(RoundedCornerShape(3.dp)),
-                    color = OrangeRed,
-                    trackColor = OrangeChip,
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.primaryContainer,
                     strokeCap = StrokeCap.Round
                 )
             }
@@ -603,10 +603,10 @@ private fun EmptyState(message: String) {
             Icon(
                 Icons.Default.BarChart,
                 contentDescription = null,
-                tint = OrangeRed.copy(alpha = 0.3f),
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                 modifier = Modifier.size(56.dp)
             )
-            Text(message, fontSize = 14.sp, color = MediumGray)
+            Text(message, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

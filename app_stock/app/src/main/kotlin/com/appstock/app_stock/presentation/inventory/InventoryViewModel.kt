@@ -1,6 +1,7 @@
 ﻿package com.appstock.app_stock.presentation.inventory
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.appstock.app_stock.data.repository.InventoryRepositoryImpl
 import com.appstock.app_stock.domain.model.InventoryMovement
@@ -48,6 +49,13 @@ class InventoryViewModel(
             )
             repository.registerMovement(movement)
             _isLoading.value = false
+        }
+    }
+
+    class Factory(private val productId: String) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return InventoryViewModel(productId = productId) as T
         }
     }
 }

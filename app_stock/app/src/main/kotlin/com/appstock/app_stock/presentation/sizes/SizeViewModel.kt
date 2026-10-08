@@ -1,6 +1,7 @@
 ﻿package com.appstock.app_stock.presentation.sizes
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.appstock.app_stock.data.repository.SizeRepositoryImpl
 import com.appstock.app_stock.domain.model.ProductSize
@@ -26,13 +27,17 @@ class SizeViewModel(
 
     private fun loadSizes() {
         viewModelScope.launch {
-            repository.getProductSizes(productId).collect {
-                if (it.isEmpty()) {
-                    repository.initializeDefaultSizes(productId)
-                } else {
-                    _sizes.value = it
-                    _isLoading.value = false
+            try {
+                repository.getProductSizes(productId).collect {
+                    if (it.isEmpty()) {
+                        repository.initializeDefaultSizes(productId)
+                    } else {
+                        _sizes.value = it
+                        _isLoading.value = false
+                    }
                 }
+            } finally {
+                _isLoading.value = false
             }
         }
     }
@@ -41,6 +46,13 @@ class SizeViewModel(
         viewModelScope.launch {
             val newStock = (currentStock + delta).coerceAtLeast(0)
             repository.updateSizeStock(productId, sizeId, newStock)
+        }
+    }
+
+    class Factory(private val productId: String) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return SizeViewModel(productId = productId) as T
         }
     }
 }

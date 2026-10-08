@@ -18,9 +18,11 @@ import com.appstock.app_stock.presentation.navigation.Screen
 import com.appstock.app_stock.presentation.dashboard.DashboardScreen
 import com.appstock.app_stock.presentation.dashboard.DashboardViewModel
 import com.appstock.app_stock.presentation.products.AddProductScreen
+import com.appstock.app_stock.presentation.products.ProductDetailScreen
 import com.appstock.app_stock.presentation.products.ProductListScreen
 import com.appstock.app_stock.presentation.products.ProductViewModel
 import com.appstock.app_stock.presentation.categories.CategoryScreen
+import com.appstock.app_stock.presentation.categories.CategoryProductsScreen
 import com.appstock.app_stock.presentation.categories.CategoryViewModel
 import com.appstock.app_stock.presentation.reports.ReportsScreen
 import com.appstock.app_stock.presentation.reports.ReportViewModel
@@ -33,8 +35,6 @@ import com.appstock.app_stock.presentation.profile.ProfileScreen
 import com.appstock.app_stock.presentation.profile.ProfileViewModel
 import com.appstock.app_stock.presentation.ui.theme.*
 
-// Rutas que NO deben mostrar la bottom bar
-private val fullScreenRoutes = setOf(Screen.AddProduct.route)
 
 // Rutas visibles en la bottom bar
 private val bottomBarScreens = listOf(
@@ -85,17 +85,21 @@ fun MainScreen(authViewModel: AuthViewModel) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     // Instancias compartidas de ViewModels para que el estado se preserve
-    val productViewModel = remember { ProductViewModel() }
-    val dashboardViewModel = remember { DashboardViewModel() }
+    val productViewModel: ProductViewModel = viewModel()
+    val dashboardViewModel: DashboardViewModel = viewModel()
+    val categoryViewModel: CategoryViewModel = viewModel()
     
     // Le pasamos la funcion de logout al dashboard si la necesita
     // (Por ahora la podríamos poner en el header del dashboard)
 
     Scaffold(
         bottomBar = {
-            if (currentRoute !in fullScreenRoutes) {
+            val hideBottomBar = currentRoute == Screen.AddProduct.route ||
+                currentRoute?.contains("category_products") == true ||
+                currentRoute?.contains("product_detail") == true
+            if (!hideBottomBar) {
                 NavigationBar(
-                    containerColor = White,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 0.dp
                 ) {
                     val currentDestination = navBackStackEntry?.destination
@@ -111,11 +115,11 @@ fun MainScreen(authViewModel: AuthViewModel) {
                             },
                             selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = OrangeRed,
-                                selectedTextColor = OrangeRed,
-                                indicatorColor = OrangeChip,
-                                unselectedIconColor = MediumGray,
-                                unselectedTextColor = MediumGray
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                             ),
                             onClick = {
                                 navController.navigate(screen.route) {
@@ -140,6 +144,8 @@ fun MainScreen(authViewModel: AuthViewModel) {
             composable(Screen.Dashboard.route) { 
                 DashboardScreen(
                     viewModel = dashboardViewModel,
+                    navController = navController,
+                    isStartDestination = currentRoute == Screen.Dashboard.route,
                     onLogoutClick = { authViewModel.logout() },
                     onProfileClick = { navController.navigate(Screen.Profile.route) }
                 ) 
@@ -150,9 +156,46 @@ fun MainScreen(authViewModel: AuthViewModel) {
             composable(Screen.AddProduct.route) {
                 AddProductScreen(productViewModel, navController)
             }
-            composable(Screen.Categories.route) { CategoryScreen(CategoryViewModel(), navController) }
-            composable(Screen.Reports.route) { ReportsScreen(ReportViewModel(), navController) }
-            composable(Screen.AI.route) { AIScreen(AIViewModel(), navController) }
+            composable(
+                route = Screen.ProductDetail.route,
+                arguments = listOf(
+                    androidx.navigation.navArgument("productId") { type = androidx.navigation.NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val productId = backStackEntry.arguments?.getString("productId") ?: ""
+                ProductDetailScreen(
+                    viewModel     = productViewModel,
+                    navController = navController,
+                    productId     = productId
+                )
+            }
+            composable(Screen.Categories.route) {
+                CategoryScreen(categoryViewModel, navController)
+            }
+            composable(
+                route = Screen.CategoryProducts.route,
+                arguments = listOf(
+                    androidx.navigation.navArgument("categoryId") { type = androidx.navigation.NavType.StringType },
+                    androidx.navigation.navArgument("categoryName") { type = androidx.navigation.NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val categoryId = backStackEntry.arguments?.getString("categoryId") ?: ""
+                val categoryName = backStackEntry.arguments?.getString("categoryName") ?: ""
+                CategoryProductsScreen(
+                    viewModel = categoryViewModel,
+                    navController = navController,
+                    categoryId = categoryId,
+                    categoryName = categoryName
+                )
+            }
+            composable(Screen.Reports.route) { ReportsScreen(viewModel(), navController) }
+            composable(Screen.Settings.route) {
+                com.appstock.app_stock.presentation.settings.SettingsScreen(
+                    navController = navController,
+                    onLogoutClick = { authViewModel.logout() }
+                )
+            }
+            composable(Screen.AI.route) { AIScreen(viewModel(), navController) }
             composable(Screen.Profile.route) { ProfileScreen(viewModel(), navController) }
         }
     }

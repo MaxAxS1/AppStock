@@ -30,17 +30,18 @@ import com.appstock.app_stock.domain.model.ProductSize
 import com.appstock.app_stock.domain.model.SizeTable
 import java.util.Date
 
-// Paleta naranja — sincronizada con Theme.kt
-private val Primary   = Color(0xFFFF5200)
-private val Secondary = Color(0xFFFF7A45)
-private val Success   = Color(0xFF22C55E)
-private val ErrorRed  = Color(0xFFEF4444)
-private val ChipBg    = Color(0xFFFFE0D0)
-private val BgColor   = Color(0xFFFFF0EA)
+// Colores movidos adentro del composable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProductScreen(viewModel: ProductViewModel, navController: NavController) {
+
+    val Primary   = MaterialTheme.colorScheme.primary
+    val Secondary = MaterialTheme.colorScheme.secondary
+    val Success   = Color(0xFF22C55E)
+    val ErrorRed  = MaterialTheme.colorScheme.error
+    val ChipBg    = MaterialTheme.colorScheme.primaryContainer
+    val BgColor   = MaterialTheme.colorScheme.background
 
     // ——— Estados del formulario ———
     var nombre by remember { mutableStateOf("") }
@@ -137,16 +138,16 @@ fun AddProductScreen(viewModel: ProductViewModel, navController: NavController) 
         containerColor = BgColor,
         topBar = {
             TopAppBar(
-                title = { Text("Nuevo Producto", color = Color.White, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold) },
+                title = { Text("Nuevo Producto", color = MaterialTheme.colorScheme.onPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Primary,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         },
@@ -157,14 +158,14 @@ fun AddProductScreen(viewModel: ProductViewModel, navController: NavController) 
                     if (isSaving) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Icon(Icons.Default.Check, contentDescription = null, tint = Color.White)
+                        Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 },
-                text = { Text(if (isSaving) "Guardando..." else "Guardar Producto", color = Color.White) },
+                text = { Text(if (isSaving) "Guardando..." else "Guardar Producto", color = MaterialTheme.colorScheme.onPrimary) },
                 containerColor = Primary
             )
         }
@@ -271,7 +272,7 @@ fun AddProductScreen(viewModel: ProductViewModel, navController: NavController) 
                 ) {
                     if (categories.isEmpty()) {
                         DropdownMenuItem(
-                            text = { Text("Sin categorías disponibles", color = Color.Gray) },
+                            text = { Text("Sin categorías disponibles", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                             onClick = { categoryExpanded = false }
                         )
                     } else {
@@ -402,12 +403,12 @@ fun AddProductScreen(viewModel: ProductViewModel, navController: NavController) 
                             selectedContainerColor = when (option) {
                                 "disponible" -> Success.copy(alpha = 0.15f)
                                 "agotado" -> ErrorRed.copy(alpha = 0.15f)
-                                else -> Color.Gray.copy(alpha = 0.15f)
+                                else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
                             },
                             selectedLabelColor = when (option) {
                                 "disponible" -> Success
                                 "agotado" -> ErrorRed
-                                else -> Color.Gray
+                                else -> MaterialTheme.colorScheme.onSurfaceVariant
                             }
                         )
                     )
@@ -474,7 +475,7 @@ fun AddProductScreen(viewModel: ProductViewModel, navController: NavController) 
             Text(
                 text = "Activá cada talle e ingresá el stock disponible",
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             // Una fila por talle — siempre visible, switch para activar
@@ -562,11 +563,11 @@ private fun SectionTitle(title: String) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleSmall,
-            color = Primary
+            color = MaterialTheme.colorScheme.primary
         )
         Divider(
             modifier = Modifier.padding(top = 4.dp),
-            color = Primary.copy(alpha = 0.2f)
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
         )
     }
 }

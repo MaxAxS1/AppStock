@@ -1,33 +1,32 @@
 package com.appstock.app_stock.presentation.products
 
+import android.app.Application
 import android.net.Uri
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.appstock.app_stock.data.repository.CategoryRepositoryImpl
 import com.appstock.app_stock.data.repository.ProductRepositoryImpl
 import com.appstock.app_stock.data.repository.SizeRepositoryImpl
+import com.appstock.app_stock.data.service.ImageUploadService
 import com.appstock.app_stock.domain.model.Category
 import com.appstock.app_stock.domain.model.ProductDetail
 import com.appstock.app_stock.domain.model.ProductSize
 import com.appstock.app_stock.domain.repository.CategoryRepository
 import com.appstock.app_stock.domain.repository.ProductRepository
-import com.appstock.app_stock.domain.repository.SessionManager
 import com.appstock.app_stock.domain.repository.SizeRepository
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import java.util.UUID
 
-class ProductViewModel(
-    private val repository: ProductRepository = ProductRepositoryImpl(),
-    private val sizeRepository: SizeRepository = SizeRepositoryImpl(),
+class ProductViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val repository: ProductRepository = ProductRepositoryImpl()
+    private val sizeRepository: SizeRepository = SizeRepositoryImpl()
     private val categoryRepository: CategoryRepository = CategoryRepositoryImpl()
-) : ViewModel() {
 
     // — Lista de productos —
     private val _products = MutableStateFlow<List<ProductDetail>>(emptyList())
@@ -53,6 +52,26 @@ class ProductViewModel(
     private val _saveError = MutableStateFlow<String?>(null)
     val saveError: StateFlow<String?> = _saveError
 
+    // — Estado de edición de producto —
+    private val _selectedProduct = MutableStateFlow<ProductDetail?>(null)
+    val selectedProduct: StateFlow<ProductDetail?> = _selectedProduct
+
+    private val _isUpdating = MutableStateFlow(false)
+    val isUpdating: StateFlow<Boolean> = _isUpdating
+
+    private val _updateSuccess = MutableStateFlow(false)
+    val updateSuccess: StateFlow<Boolean> = _updateSuccess
+
+    private val _updateError = MutableStateFlow<String?>(null)
+    val updateError: StateFlow<String?> = _updateError
+
+    // — Estado de eliminación —
+    private val _deleteSuccess = MutableStateFlow(false)
+    val deleteSuccess: StateFlow<Boolean> = _deleteSuccess
+
+    private val _deleteError = MutableStateFlow<String?>(null)
+    val deleteError: StateFlow<String?> = _deleteError
+
     init {
         // Escuchar la lista de productos según búsqueda
         viewModelScope.launch {
@@ -68,7 +87,6 @@ class ProductViewModel(
                     _isLoading.value = false
                 }
         }
-        // Cargar categorías disponibles
         loadCategories()
     }
 
@@ -78,7 +96,6 @@ class ProductViewModel(
 
     private fun loadCategories() {
         viewModelScope.launch {
-            // Inicializa las categorías predefinidas si Firestore está vacío
             com.appstock.app_stock.data.CategorySeeder.seedIfEmpty()
             categoryRepository.getCategories().collect {
                 _categories.value = it
@@ -86,33 +103,63 @@ class ProductViewModel(
         }
     }
 
-    /**
-     * Guarda un producto nuevo junto con sus talles en Firestore.
-     * Si hay imageUri, primero la sube a Storage y obtiene la URL.
-     */
+    /** Carga un producto por ID en el estado selectedProduct */
+    fun loadProductById(productId: String) {
+        viewModelScope.launch {
+            val cached = _products.value.firstOrNull { it.id == productId }
+            if (cached != null) {
+                _selectedProduct.value = cached
+                com.appstock.app_stock.domain.repository.SessionManager.addViewedProduct(cached)
+            } else {
+                val fromFlow = repository.getProducts().first().firstOrNull { it.id == productId }
+                _selectedProduct.value = fromFlow
+                if (fromFlow != null) {
+                    com.appstock.app_stock.domain.repository.SessionManager.addViewedProduct(fromFlow)
+                }
+            }
+        }
+    }
+
+    fun clearSelectedProduct() {
+        _selectedProduct.value = null
+    }
+
+    // ── Subida de imagen via ImgBB ────────────────────────────────────────────
+
+    private suspend fun uploadImageIfNeeded(imageUri: Uri?): Result<String?> {
+        if (imageUri == null) return Result.success(null)
+
+        if (!ImageUploadService.isConfigured()) {
+            return Result.failure(
+                Exception("ImgBB no configurado. Ingresá tu API key en ImageUploadService.kt")
+            )
+        }
+
+        return ImageUploadService.uploadImage(getApplication(), imageUri)
+            .map { url -> url } // Result<String> → Result<String?>
+    }
+
+    // ── Guardar nuevo producto ────────────────────────────────────────────────
+
     fun saveProduct(product: ProductDetail, sizes: List<ProductSize>, imageUri: Uri?) {
         viewModelScope.launch {
             _isSaving.value = true
             _saveError.value = null
             _saveSuccess.value = false
 
+            // Subir imagen si hay una seleccionada
             var finalImageUrl = product.imagenUrl
             if (imageUri != null) {
-                try {
-                    val storageRef = FirebaseStorage.getInstance().reference
-                    val storeId = SessionManager.getStoreId()
-                    val imageRef = storageRef.child("stores/$storeId/products/${UUID.randomUUID()}.jpg")
-                    imageRef.putFile(imageUri).await()
-                    finalImageUrl = imageRef.downloadUrl.await().toString()
-                } catch (e: Exception) {
-                    _saveError.value = "Error al subir imagen: ${e.message}"
+                val uploadResult = uploadImageIfNeeded(imageUri)
+                if (uploadResult.isFailure) {
+                    _saveError.value = uploadResult.exceptionOrNull()?.message ?: "Error al subir imagen"
                     _isSaving.value = false
                     return@launch
                 }
+                finalImageUrl = uploadResult.getOrNull() ?: finalImageUrl
             }
 
             val finalProduct = product.copy(imagenUrl = finalImageUrl)
-
             val productResult = repository.addProduct(finalProduct)
             if (productResult.isFailure) {
                 _saveError.value = productResult.exceptionOrNull()?.message ?: "Error al guardar el producto"
@@ -120,32 +167,15 @@ class ProductViewModel(
                 return@launch
             }
 
-            // Obtener el id del producto recién creado para guardar sus talles
-            // addProduct ya persiste el id dentro del documento; lo recuperamos de Firestore
-            // escuchando la primera emisión de getProducts y buscando por nombre+timestamp.
-            // Estrategia más simple: usar el producto retornado desde la lista reactiva.
-            // Para no hacer una segunda lectura, calculamos el id desde el repositorio
-            // usando la misma lógica: el id es asignado antes del set().
-            // Usamos una búsqueda puntual por nombre para obtener el id.
-            val sizesResult = if (sizes.isNotEmpty()) {
-                // Buscar el producto recién insertado para obtener su id
+            // Guardar talles con el id devuelto por el repositorio
+            val productId = productResult.getOrNull()
+            val sizesResult = if (sizes.isNotEmpty() && productId != null) {
                 try {
-                    val freshProducts = _products.value
-                    val savedProduct = freshProducts.firstOrNull {
-                        it.nombre == finalProduct.nombre && it.createdAt == finalProduct.createdAt
-                    }
-                    if (savedProduct != null) {
-                        sizeRepository.saveProductSizes(savedProduct.id, sizes)
-                    } else {
-                        // Fallback: esperar la próxima emisión del flow ya está manejado reactivamente
-                        Result.success(Unit)
-                    }
+                    sizeRepository.saveProductSizes(productId, sizes)
                 } catch (e: Exception) {
                     Result.failure(e)
                 }
-            } else {
-                Result.success(Unit)
-            }
+            } else Result.success(Unit)
 
             if (sizesResult.isFailure) {
                 _saveError.value = sizesResult.exceptionOrNull()?.message ?: "Producto guardado, pero error en talles"
@@ -156,14 +186,65 @@ class ProductViewModel(
         }
     }
 
+    // ── Actualizar producto existente ─────────────────────────────────────────
+
+    fun updateProduct(product: ProductDetail, sizes: List<ProductSize>, imageUri: Uri?) {
+        viewModelScope.launch {
+            _isUpdating.value = true
+            _updateError.value = null
+            _updateSuccess.value = false
+
+            // Subir imagen nueva si fue seleccionada
+            var finalImageUrl = product.imagenUrl
+            if (imageUri != null) {
+                val uploadResult = uploadImageIfNeeded(imageUri)
+                if (uploadResult.isFailure) {
+                    _updateError.value = uploadResult.exceptionOrNull()?.message ?: "Error al subir imagen"
+                    _isUpdating.value = false
+                    return@launch
+                }
+                finalImageUrl = uploadResult.getOrNull() ?: finalImageUrl
+            }
+
+            val finalProduct = product.copy(imagenUrl = finalImageUrl)
+            val result = repository.updateProduct(finalProduct)
+            if (result.isSuccess) {
+                if (sizes.isNotEmpty()) {
+                    sizeRepository.saveProductSizes(product.id, sizes)
+                }
+                _updateSuccess.value = true
+                _selectedProduct.value = finalProduct
+            } else {
+                _updateError.value = result.exceptionOrNull()?.message ?: "Error al actualizar el producto"
+            }
+            _isUpdating.value = false
+        }
+    }
+
     fun resetSaveState() {
         _saveSuccess.value = false
         _saveError.value = null
     }
 
+    fun resetUpdateState() {
+        _updateSuccess.value = false
+        _updateError.value = null
+    }
+
     fun deleteProduct(id: String) {
         viewModelScope.launch {
-            repository.deleteProduct(id)
+            _deleteError.value = null
+            val result = repository.deleteProduct(id)
+            if (result.isSuccess) {
+                _deleteSuccess.value = true
+            } else {
+                _deleteError.value = result.exceptionOrNull()?.message ?: "Error al eliminar el producto"
+            }
         }
+    }
+
+    fun resetDeleteState() {
+        _deleteSuccess.value = false
+        _deleteError.value = null
     }
 }

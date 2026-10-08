@@ -73,6 +73,21 @@ class AuthViewModel(
         }
     }
 
+    fun validateRegister(
+        password: String,
+        confirmPassword: String,
+        isEmployee: Boolean,
+        storeCode: String
+    ): String? {
+        if (password != confirmPassword) {
+            return "Las contraseñas no coinciden"
+        }
+        if (isEmployee && storeCode.isBlank()) {
+            return "Ingresá el código de tienda"
+        }
+        return null
+    }
+
     fun logout() {
         viewModelScope.launch {
             repository.logout()

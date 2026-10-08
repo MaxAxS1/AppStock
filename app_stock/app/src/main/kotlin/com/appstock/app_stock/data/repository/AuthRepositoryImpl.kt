@@ -71,21 +71,22 @@ class AuthRepositoryImpl(
             }
         }
 
-        val result = firebaseAuth.createUserWithEmailAndPassword(email, pass).await()
+        val result = firebaseAuth.createUserWithEmailAndPassword(email.trim(), pass).await()
         val firebaseUser = result.user
 
         if (firebaseUser != null) {
+            try {
             val isOwner = storeCode.isNullOrBlank()
             val finalStoreId = if (isOwner) UUID.randomUUID().toString() else storeCode!!.trim()
             val initialRole = if (isOwner) "owner" else "employee"
             
             val newUser = User(
                 uid = firebaseUser.uid,
-                email = email,
+                email = email.trim().lowercase(),
                 displayName = email.substringBefore("@"),
-                nombre = nombre,
-                apellido = apellido,
-                username = username,
+                nombre = nombre.trim(),
+                apellido = apellido.trim(),
+                username = username.trim(),
                 storeId = finalStoreId,
                 role = initialRole
             )
@@ -100,6 +101,11 @@ class AuthRepositoryImpl(
             }
 
             Result.success(newUser)
+            } catch (e: Exception) {
+                // Compensación: evita usuario Auth huérfano sin perfil/store.
+                try { firebaseUser.delete().await() } catch (_: Exception) { }
+                Result.failure(e)
+            }
         } else {
             Result.failure(Exception("Error al registrarse (user null)"))
         }

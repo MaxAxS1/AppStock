@@ -21,12 +21,15 @@ import com.appstock.app_stock.domain.model.RecommendationPriority
 
 import androidx.navigation.NavController
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Send
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AIScreen(viewModel: AIViewModel, navController: NavController) {
     val recommendations by viewModel.recommendations.collectAsState()
     val isAnalyzing by viewModel.isAnalyzing.collectAsState()
+    val chatMessages by viewModel.chatMessages.collectAsState()
+    var currentQuery by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -43,24 +46,93 @@ fun AIScreen(viewModel: AIViewModel, navController: NavController) {
                     }
                 }
             )
-        }
-    ) { padding ->
-        Column(modifier = Modifier.padding(padding).padding(16.dp)) {
-            AssistantHeader(isAnalyzing)
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            if (recommendations.isEmpty() && !isAnalyzing) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("¡Todo bajo control! No hay alertas críticas por el momento.")
-                }
-            } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    items(recommendations) { recommendation ->
-                        RecommendationCard(recommendation)
+        },
+        bottomBar = {
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 8.dp
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp).navigationBarsPadding(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = currentQuery,
+                        onValueChange = { currentQuery = it },
+                        modifier = Modifier.weight(1f),
+                        placeholder = { Text("Escribe una pregunta...") },
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                        ),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        onClick = { 
+                            viewModel.sendMessage(currentQuery)
+                            currentQuery = ""
+                        },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .background(MaterialTheme.colorScheme.primary, CircleShape)
+                    ) {
+                        Icon(Icons.Default.Send, contentDescription = "Enviar", tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }
+        }
+    ) { padding ->
+        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Mensajes del chat
+                items(chatMessages) { msg ->
+                    ChatBubble(msg)
+                }
+                
+                // Indicador de escritura
+                if (isAnalyzing) {
+                    item {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+                            Surface(
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                modifier = Modifier.padding(end = 48.dp)
+                            ) {
+                                Text("...", modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChatBubble(msg: ChatMessage) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = if (msg.isUser) Arrangement.End else Arrangement.Start
+    ) {
+        Surface(
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+            color = if (msg.isUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+            modifier = Modifier.padding(
+                start = if (msg.isUser) 48.dp else 0.dp,
+                end = if (!msg.isUser) 48.dp else 0.dp
+            )
+        ) {
+            Text(
+                text = msg.text,
+                modifier = Modifier.padding(16.dp),
+                color = if (msg.isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

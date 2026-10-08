@@ -93,16 +93,37 @@ com.appstock.app_stock
 1.  **Clonar el Repositorio**
     ```bash
     git clone https://github.com/tu-usuario/app-stockify.git
-    cd app-stockify
+    cd app-stockify/app_stock/app/
     ```
+    > El código Android vive en `app_stock/app/` (módulo `app`, package `com.appstock.app_stock`).
 
 2.  **Configurar Firebase**
-    *   Este proyecto requiere estar conectado a Firebase. 
+    *   Este proyecto requiere estar conectado a Firebase.
     *   Crea un proyecto en [Firebase Console](https://console.firebase.google.com/).
     *   Registra tu aplicación Android (con el package `com.appstock.app_stock`).
     *   Descarga el archivo `google-services.json` proporcionado por Firebase.
-    *   Colócalo dentro del directorio `app/` (`app-stockify/app/google-services.json`).
+    *   Colócalo dentro del directorio `app/` (`app_stock/app/google-services.json`).
+    *   ⚠️ **No commitear `google-services.json`**: es un secreto por entorno. Si ya fue commiteado, quitarlo del índice con `git rm --cached app_stock/app/google-services.json` y añadir la ruta al `.gitignore`. Cada desarrollador/CI lo provisiona localmente.
     *   Habilita **Authentication** (Email/Password) y **Firestore Database** en la consola.
+
+2b. **Configurar key de ImgBB (subida de imágenes)**
+    *   Las imágenes de producto se suben a [ImgBB](https://api.imgbb.com) vía `data/service/ImageUploadService.kt` (Firebase Storage no se usa: sin plan Blaze).
+    *   Crea una cuenta gratuita en ImgBB y obtén tu API key.
+    *   Añádela en `app_stock/local.properties` (archivo local, no commiteado):
+        ```properties
+        imgbb.api.key=TU_API_KEY_AQUI
+        ```
+    *   Expón la key vía `BuildConfig` en `app/build.gradle.kts` (leer `local.properties` + `buildConfigField("String", "IMGBB_API_KEY", ...)`), y consúmela como `BuildConfig.IMGBB_API_KEY`.
+    *   ⚠️ **Nunca hardcodees la key en un `.kt`.** Estado actual: `ImageUploadService.kt:28` aún contiene una key hardcodeada → rota la key en ImgBB y migra a `BuildConfig` (ver `MEJORAS_APLICADAS.md`).
+
+2c. **Reglas de Firestore**
+    *   Este repo aún no incluye `firestore.rules`. Publica reglas que aíslen por tienda (`stores/{storeId}` + Auth con custom claims o validación de membresía) y despliega con:
+        ```bash
+        firebase deploy --only firestore:rules
+        ```
+    *   No publiques el proyecto con reglas abiertas en producción (ver `MEJORAS_APLICADAS.md`).
+
+> **Versiones verificadas en `app/build.gradle.kts`:** `compileSdk = 35`, `targetSdk = 35`, `minSdk = 24`.
 
 3.  **Compilar el Proyecto**
     *   Abre el proyecto usando **Android Studio** (Koala o superior recomendado).

@@ -11,7 +11,15 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     object Reports : Screen("reports", "Reportes", Icons.Default.BarChart)
     object AI : Screen("ai", "Asistente", Icons.Default.AutoAwesome)
     object Profile : Screen("profile", "Perfil", Icons.Default.Person)
+    object Settings : Screen("settings", "Ajustes", Icons.Default.Settings)
 
-    // Ruta interna — no aparece en la bottom bar
+    // Rutas internas — no aparecen en la bottom bar
     object AddProduct : Screen("add_product", "Nuevo Producto", Icons.Default.Add)
+    object ProductDetail : Screen("product_detail/{productId}", "Producto", Icons.Default.Inventory2) {
+        fun createRoute(productId: String) = "product_detail/$productId"
+    }
+    object CategoryProducts : Screen("category_products/{categoryId}/{categoryName}", "Productos", Icons.Default.Inventory2) {
+        fun createRoute(categoryId: String, categoryName: String) =
+            "category_products/$categoryId/${android.net.Uri.encode(categoryName)}"
+    }
 }

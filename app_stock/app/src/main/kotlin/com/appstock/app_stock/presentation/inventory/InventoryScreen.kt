@@ -5,8 +5,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.appstock.app_stock.domain.model.InventoryMovement
@@ -17,7 +17,8 @@ import java.util.*
 @Composable
 fun InventoryHistoryScreen(viewModel: InventoryViewModel) {
     val movements by viewModel.movements.collectAsState()
-    
+    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text(
             text = "Historial de Movimientos",
@@ -25,22 +26,32 @@ fun InventoryHistoryScreen(viewModel: InventoryViewModel) {
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(16.dp))
-        
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(movements) { movement ->
-                MovementItem(movement)
+
+        if (movements.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = "Sin movimientos",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(movements, key = { it.id }) { movement ->
+                    MovementItem(movement, dateFormat)
+                }
             }
         }
     }
 }
 
 @Composable
-fun MovementItem(movement: InventoryMovement) {
-    val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
+fun MovementItem(movement: InventoryMovement, dateFormat: SimpleDateFormat) {
+    val colorScheme = MaterialTheme.colorScheme
     val color = when(movement.type) {
-        MovementType.ENTRADA -> Color(0xFF2E7D32)
-        MovementType.SALIDA -> Color(0xFFC62828)
-        MovementType.AJUSTE -> Color(0xFF1976D2)
+        MovementType.ENTRADA -> colorScheme.primary
+        MovementType.SALIDA -> colorScheme.error
+        MovementType.AJUSTE -> colorScheme.secondary
     }
 
     Card(
@@ -53,7 +64,7 @@ fun MovementItem(movement: InventoryMovement) {
         ) {
             Column {
                 Text(
-                    text = " - Talle ",
+                    text = "${movement.productName} - Talle ${movement.sizeName}",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     color = color
@@ -63,8 +74,9 @@ fun MovementItem(movement: InventoryMovement) {
                     style = MaterialTheme.typography.bodySmall
                 )
             }
+            val sign = if (movement.type == MovementType.SALIDA) "-" else "+"
             Text(
-                text = (if (movement.type == MovementType.SALIDA) "-" else "+") + "",
+                text = "$sign${movement.quantity}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = color

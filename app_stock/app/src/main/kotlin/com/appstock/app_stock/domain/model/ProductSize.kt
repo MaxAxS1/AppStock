@@ -5,8 +5,8 @@ package com.appstock.app_stock.domain.model
  * Sigue la tabla de talles definida en DATA_MODEL.md
  */
 data class ProductSize(
-    val id: Int,
-    val name: String, // XS/S, S/M, etc.
+    val id: Int = 0,
+    val name: String = "", // XS/S, S/M, etc.
     val stock: Int = 0,
     val minStock: Int = 0
 )

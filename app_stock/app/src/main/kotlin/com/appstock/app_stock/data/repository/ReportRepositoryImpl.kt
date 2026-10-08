@@ -16,14 +16,15 @@ class ReportRepositoryImpl(
 
     private fun getProductsCollection() = firestore
         .collection("stores")
-        .document(SessionManager.getStoreId())
+        .document(SessionManager.getStoreIdOrNull() ?: throw IllegalStateException("No hay un storeId en sesión."))
         .collection("products")
 
     override fun getFullInventoryReport(): Flow<FullInventoryReport> = callbackFlow {
         val subscription = getProductsCollection()
+            .limit(500)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    android.util.Log.e("ReportRepo", "Error escuchando reporte", error)
                     return@addSnapshotListener
                 }
 

@@ -1,0 +1,16 @@
+# Gradle / Android
+*.hprof
+local.properties
+**/google-services.json
+.gradle/
+build/
+/app/build/
+
+# Keystores con claves de firma (no subir claves reales)
+*.keystore
+*.jks
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+.DS_Store

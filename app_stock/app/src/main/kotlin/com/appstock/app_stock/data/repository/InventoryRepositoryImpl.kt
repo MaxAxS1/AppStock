@@ -3,24 +3,38 @@
 import com.appstock.app_stock.domain.model.InventoryMovement
 import com.appstock.app_stock.domain.model.MovementType
 import com.appstock.app_stock.domain.repository.InventoryRepository
+import com.appstock.app_stock.domain.repository.SessionManager
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import android.util.Log
 
 class InventoryRepositoryImpl(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) : InventoryRepository {
 
+    private fun productsCollection() = firestore
+        .collection("stores")
+        .document(SessionManager.getStoreIdOrNull() ?: throw IllegalStateException("No hay un storeId en sesión."))
+        .collection("products")
+
+    private fun historyCollection() = firestore
+        .collection("stores")
+        .document(SessionManager.getStoreIdOrNull() ?: throw IllegalStateException("No hay un storeId en sesión."))
+        .collection("inventory_history")
+
     override fun getMovements(productId: String): Flow<List<InventoryMovement>> = callbackFlow {
-        val subscription = firestore.collection("inventory_history")
+        val subscription = historyCollection()
             .whereEqualTo("productId", productId)
             .orderBy("timestamp", Query.Direction.DESCENDING)
+            .limit(100)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    Log.e("InventoryRepo", "Error escuchando movimientos", error)
+                    trySend(emptyList())
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
@@ -32,11 +46,12 @@ class InventoryRepositoryImpl(
     }
 
     override suspend fun registerMovement(movement: InventoryMovement): Result<Unit> = try {
+        require(movement.quantity > 0) { "La cantidad debe ser mayor a 0." }
         firestore.runTransaction { transaction ->
             // 1. Referencias
-            val productRef = firestore.collection("products").document(movement.productId)
+            val productRef = productsCollection().document(movement.productId)
             val sizeRef = productRef.collection("sizes").document(movement.sizeId.toString())
-            val historyRef = firestore.collection("inventory_history").document()
+            val historyRef = historyCollection().document()
 
             // 2. Obtener stock actual del talle
             val sizeSnap = transaction.get(sizeRef)

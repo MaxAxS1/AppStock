@@ -15,14 +15,20 @@ class DashboardRepositoryImpl(
 
     private fun getProductsCollection() = firestore
         .collection("stores")
-        .document(SessionManager.getStoreId())
+        .document(SessionManager.getStoreIdOrNull() ?: throw IllegalStateException("No hay un storeId en sesión."))
         .collection("products")
+
+    companion object {
+        const val LOW_STOCK_MAX = 5
+        const val QUERY_LIMIT = 200L
+    }
 
     override fun getInventoryStats(): Flow<InventoryStats> = callbackFlow {
         val subscription = getProductsCollection()
+            .limit(QUERY_LIMIT)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    android.util.Log.e("DashboardRepo", "Error escuchando stats", error)
                     return@addSnapshotListener
                 }
 
@@ -30,7 +36,7 @@ class DashboardRepositoryImpl(
                     val products = snapshot.toObjects(Product::class.java)
                     val stats = InventoryStats(
                         totalProducts = products.size,
-                        lowStockCount = products.count { it.stock in 1..5 },
+                        lowStockCount = products.count { it.stock in 1..LOW_STOCK_MAX },
                         outOfStockCount = products.count { it.stock == 0 },
                         totalCategories = products.map { it.categoriaId }.distinct().size,
                         recentProducts = products.take(5)

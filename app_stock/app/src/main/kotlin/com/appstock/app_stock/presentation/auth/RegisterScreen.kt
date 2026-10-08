@@ -3,9 +3,12 @@ package com.appstock.app_stock.presentation.auth
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -13,7 +16,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.appstock.app_stock.R
@@ -27,24 +32,25 @@ fun RegisterScreen(
 ) {
     val error by viewModel.error.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    var nombre by remember { mutableStateOf("") }
-    var apellido by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var isEmployee by remember { mutableStateOf(false) }
-    var storeCode by remember { mutableStateOf("") }
+    var nombre by rememberSaveable { mutableStateOf("") }
+    var apellido by rememberSaveable { mutableStateOf("") }
+    var username by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var confirmPassword by rememberSaveable { mutableStateOf("") }
+    var isEmployee by rememberSaveable { mutableStateOf(false) }
+    var storeCode by rememberSaveable { mutableStateOf("") }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(OrangeLight.copy(alpha = 0.5f), White)))
+            .background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f), MaterialTheme.colorScheme.background)))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -63,7 +69,7 @@ fun RegisterScreen(
                 text = "Nueva Tienda",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = OrangeRed
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -73,7 +79,7 @@ fun RegisterScreen(
                     .fillMaxWidth()
                     .shadow(16.dp, RoundedCornerShape(32.dp)),
                 shape = RoundedCornerShape(32.dp),
-                colors = CardDefaults.cardColors(containerColor = White)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
@@ -83,18 +89,18 @@ fun RegisterScreen(
                     Text(
                         text = if (isEmployee) "Ingresá el código para unirte a una tienda." else "Tu tienda se creará automáticamente.",
                         fontSize = 13.sp,
-                        color = MediumGray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
 
                     if (error != null) {
                         Surface(
-                            color = ErrorRed.copy(alpha = 0.1f),
+                            color = MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Text(
                                 text = error!!,
-                                color = ErrorRed,
+                                color = MaterialTheme.colorScheme.error,
                                 fontSize = 13.sp,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
@@ -108,9 +114,9 @@ fun RegisterScreen(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = OrangeRed,
-                            focusedLabelColor = OrangeRed,
-                            unfocusedBorderColor = MediumGray.copy(alpha = 0.5f)
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         ),
                         singleLine = true
                     )
@@ -122,9 +128,9 @@ fun RegisterScreen(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = OrangeRed,
-                            focusedLabelColor = OrangeRed,
-                            unfocusedBorderColor = MediumGray.copy(alpha = 0.5f)
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         ),
                         singleLine = true
                     )
@@ -136,9 +142,9 @@ fun RegisterScreen(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = OrangeRed,
-                            focusedLabelColor = OrangeRed,
-                            unfocusedBorderColor = MediumGray.copy(alpha = 0.5f)
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         ),
                         singleLine = true
                     )
@@ -149,10 +155,11 @@ fun RegisterScreen(
                         label = { Text("Correo electrónico") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = OrangeRed,
-                            focusedLabelColor = OrangeRed,
-                            unfocusedBorderColor = MediumGray.copy(alpha = 0.5f)
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         ),
                         singleLine = true
                     )
@@ -164,10 +171,11 @@ fun RegisterScreen(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                         visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = OrangeRed,
-                            focusedLabelColor = OrangeRed,
-                            unfocusedBorderColor = MediumGray.copy(alpha = 0.5f)
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         ),
                         singleLine = true
                     )
@@ -179,10 +187,11 @@ fun RegisterScreen(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                         visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = OrangeRed,
-                            focusedLabelColor = OrangeRed,
-                            unfocusedBorderColor = MediumGray.copy(alpha = 0.5f)
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         ),
                         singleLine = true
                     )
@@ -194,9 +203,9 @@ fun RegisterScreen(
                         Checkbox(
                             checked = isEmployee,
                             onCheckedChange = { isEmployee = it },
-                            colors = CheckboxDefaults.colors(checkedColor = OrangeRed)
+                            colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
                         )
-                        Text("Unirme como empleado", fontSize = 14.sp, color = DarkText)
+                        Text("Unirme como empleado", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                     }
 
                     if (isEmployee) {
@@ -207,9 +216,9 @@ fun RegisterScreen(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = OrangeRed,
-                                focusedLabelColor = OrangeRed,
-                                unfocusedBorderColor = MediumGray.copy(alpha = 0.5f)
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                             ),
                             singleLine = true
                         )
@@ -217,12 +226,14 @@ fun RegisterScreen(
 
                     Button(
                         onClick = { 
-                            if (password != confirmPassword) {
-                                viewModel.setError("Las contraseñas no coinciden")
-                                return@Button
-                            }
-                            if (isEmployee && storeCode.isBlank()) {
-                                viewModel.setError("Ingresá el código de tienda")
+                            val validationError = viewModel.validateRegister(
+                                password = password,
+                                confirmPassword = confirmPassword,
+                                isEmployee = isEmployee,
+                                storeCode = storeCode
+                            )
+                            if (validationError != null) {
+                                viewModel.setError(validationError)
                                 return@Button
                             }
                             viewModel.register(email, password, nombre, apellido, username, if (isEmployee) storeCode else null) 
@@ -230,18 +241,18 @@ fun RegisterScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(54.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = OrangeRed),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(16.dp),
                         enabled = !isLoading
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
-                                color = White,
+                                color = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(24.dp),
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text("Registrarse", color = White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            Text("Registrarse", color = MaterialTheme.colorScheme.onPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -252,12 +263,12 @@ fun RegisterScreen(
             TextButton(onClick = onNavigateToLogin) {
                 Text(
                     "¿Ya tienes cuenta? ",
-                    color = MediumGray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
                 Text(
                     "Inicia sesión",
-                    color = OrangeRed,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )

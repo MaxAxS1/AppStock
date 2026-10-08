@@ -8,6 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.appstock.app_stock.domain.model.ProductSize
@@ -29,7 +31,7 @@ fun SizeStockSelector(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(horizontal = 4.dp)
         ) {
-            items(sizes) { size ->
+            items(sizes, key = { it.id }) { size ->
                 SizeCard(size, onStockChange)
             }
         }
@@ -44,7 +46,7 @@ fun SizeCard(
     ElevatedCard(
         modifier = Modifier.width(120.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = if (size.stock == 0) MaterialTheme.colorScheme.errorContainer 
+            containerColor = if (size.stock <= size.minStock) MaterialTheme.colorScheme.errorContainer 
                              else MaterialTheme.colorScheme.surface
         )
     ) {
@@ -54,7 +56,7 @@ fun SizeCard(
         ) {
             Text(text = size.name, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
             Text(
-                text = "Stock: ",
+                text = "Stock: ${size.stock}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (size.stock <= size.minStock) MaterialTheme.colorScheme.error else Color.Unspecified
             )
@@ -66,14 +68,14 @@ fun SizeCard(
                 SmallFloatingActionButton(
                     onClick = { onStockChange(size.id, size.stock, -1) },
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(32.dp).semantics { contentDescription = "Disminuir stock" }
                 ) {
                     Text("-")
                 }
                 SmallFloatingActionButton(
                     onClick = { onStockChange(size.id, size.stock, 1) },
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(32.dp).semantics { contentDescription = "Aumentar stock" }
                 ) {
                     Text("+")
                 }

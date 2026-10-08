@@ -1,0 +1,50 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userStore() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.storeCode;
+    }
+
+    function belongsToStore(storeId) {
+      return isSignedIn() && userStore() == storeId;
+    }
+
+    // Documento de tienda: solo miembros de esa tienda.
+    match /stores/{storeId} {
+      allow read, write: if belongsToStore(storeId);
+
+      // Subcolecciones heredan la pertenencia a la tienda.
+      match /products/{productId} {
+        allow read, write: if belongsToStore(storeId);
+
+        match /sizes/{sizeId} {
+          allow read, write: if belongsToStore(storeId);
+        }
+      }
+
+      match /inventory_history/{historyId} {
+        allow read, write: if belongsToStore(storeId);
+      }
+
+      match /categories/{categoryId} {
+        allow read, write: if belongsToStore(storeId);
+      }
+    }
+
+    // Perfil de usuario: lectura/escritura propia,
+    // o lectura por el owner del mismo store.
+    match /users/{uid} {
+      allow read: if isSignedIn() && (
+        request.auth.uid == uid ||
+        resource.data.storeCode == userStore()
+      );
+      allow write: if isSignedIn() && request.auth.uid == uid;
+    }
+  }
+}
