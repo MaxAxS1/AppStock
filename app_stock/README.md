@@ -92,8 +92,8 @@ com.appstock.app_stock
 
 1.  **Clonar el Repositorio**
     ```bash
-    git clone https://github.com/tu-usuario/app-stockify.git
-    cd app-stockify/app_stock/app/
+    git clone https://github.com/MaxAxS1/AppStock.git
+    cd AppStock/app_stock/
     ```
     > El código Android vive en `app_stock/app/` (módulo `app`, package `com.appstock.app_stock`).
 
@@ -114,14 +114,14 @@ com.appstock.app_stock
         imgbb.api.key=TU_API_KEY_AQUI
         ```
     *   Expón la key vía `BuildConfig` en `app/build.gradle.kts` (leer `local.properties` + `buildConfigField("String", "IMGBB_API_KEY", ...)`), y consúmela como `BuildConfig.IMGBB_API_KEY`.
-    *   ⚠️ **Nunca hardcodees la key en un `.kt`.** Estado actual: `ImageUploadService.kt:28` aún contiene una key hardcodeada → rota la key en ImgBB y migra a `BuildConfig` (ver `MEJORAS_APLICADAS.md`).
+    *   ⚠️ **Nunca hardcodees la key en un `.kt`.** `ImageUploadService` ya lee de `BuildConfig`; si rotas la key en ImgBB, solo actualiza tu `local.properties`.
 
 2c. **Reglas de Firestore**
-    *   Este repo aún no incluye `firestore.rules`. Publica reglas que aíslen por tienda (`stores/{storeId}` + Auth con custom claims o validación de membresía) y despliega con:
+    *   Las reglas versionadas viven en `app_stock/firestore.rules` (aislamiento por `stores/{storeId}` según `users/{uid}.storeCode`). Despliega con:
         ```bash
         firebase deploy --only firestore:rules
         ```
-    *   No publiques el proyecto con reglas abiertas en producción (ver `MEJORAS_APLICADAS.md`).
+    *   No publiques el proyecto con reglas abiertas en producción.
 
 > **Versiones verificadas en `app/build.gradle.kts`:** `compileSdk = 35`, `targetSdk = 35`, `minSdk = 24`.
 
