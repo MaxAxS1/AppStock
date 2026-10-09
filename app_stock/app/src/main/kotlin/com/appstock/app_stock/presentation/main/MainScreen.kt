@@ -1,5 +1,10 @@
 package com.appstock.app_stock.presentation.main
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -45,6 +50,21 @@ private val bottomBarScreens = listOf(
     Screen.AI
 )
 
+// Orden de las tabs: define hacia dónde desliza la transición
+private val bottomBarOrder = bottomBarScreens.map { it.route }
+
+// Duraciones de las animaciones de navegación (ms)
+private const val NAV_DURATION = 250
+private const val NAV_SLIDE_FRACTION = 5 // 1/5 del ancho: sutil entre tabs
+
+/** Desliza hacia adelante/atras según el orden de tabs, o desde la derecha si es detalle. */
+private fun tabDirection(from: String?, to: String?): Int {
+    val fromIndex = bottomBarOrder.indexOf(from)
+    val toIndex = bottomBarOrder.indexOf(to)
+    if (fromIndex == -1 || toIndex == -1 || fromIndex == toIndex) return 0
+    return if (toIndex > fromIndex) 1 else -1
+}
+
 @Composable
 fun AppNavigator(
     authViewModel: AuthViewModel = viewModel()
@@ -61,7 +81,14 @@ fun AppNavigator(
 @Composable
 fun AuthNavigation(authViewModel: AuthViewModel) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(
+        navController = navController,
+        startDestination = "login",
+        enterTransition = { fadeIn(tween(NAV_DURATION)) },
+        exitTransition = { fadeOut(tween(NAV_DURATION)) },
+        popEnterTransition = { fadeIn(tween(NAV_DURATION)) },
+        popExitTransition = { fadeOut(tween(NAV_DURATION)) }
+    ) {
         composable("login") {
             LoginScreen(
                 viewModel = authViewModel,
@@ -139,7 +166,32 @@ fun MainScreen(authViewModel: AuthViewModel) {
         NavHost(
             navController,
             startDestination = Screen.Dashboard.route,
-            Modifier.padding(innerPadding)
+            Modifier.padding(innerPadding),
+            // Tabs: fundido + deslizamiento sutil según orden. Detalle: empuje desde derecha.
+            enterTransition = {
+                val dir = tabDirection(
+                    initialState.destination.route,
+                    targetState.destination.route
+                )
+                fadeIn(tween(NAV_DURATION)) +
+                    slideInHorizontally(tween(NAV_DURATION)) { dir * it / NAV_SLIDE_FRACTION }
+            },
+            exitTransition = {
+                val dir = tabDirection(
+                    initialState.destination.route,
+                    targetState.destination.route
+                )
+                fadeOut(tween(NAV_DURATION)) +
+                    slideOutHorizontally(tween(NAV_DURATION)) { -dir * it / NAV_SLIDE_FRACTION }
+            },
+            popEnterTransition = {
+                fadeIn(tween(NAV_DURATION)) +
+                    slideInHorizontally(tween(NAV_DURATION)) { -it / NAV_SLIDE_FRACTION }
+            },
+            popExitTransition = {
+                fadeOut(tween(NAV_DURATION)) +
+                    slideOutHorizontally(tween(NAV_DURATION)) { it / NAV_SLIDE_FRACTION }
+            }
         ) {
             composable(Screen.Dashboard.route) { 
                 DashboardScreen(
@@ -153,11 +205,25 @@ fun MainScreen(authViewModel: AuthViewModel) {
             composable(Screen.Products.route) {
                 ProductListScreen(productViewModel, navController)
             }
-            composable(Screen.AddProduct.route) {
+            composable(
+                Screen.AddProduct.route,
+                enterTransition = {
+                    fadeIn(tween(300)) + slideInHorizontally(tween(300)) { it }
+                },
+                popExitTransition = {
+                    fadeOut(tween(300)) + slideOutHorizontally(tween(300)) { it }
+                }
+            ) {
                 AddProductScreen(productViewModel, navController)
             }
             composable(
                 route = Screen.ProductDetail.route,
+                enterTransition = {
+                    fadeIn(tween(300)) + slideInHorizontally(tween(300)) { it }
+                },
+                popExitTransition = {
+                    fadeOut(tween(300)) + slideOutHorizontally(tween(300)) { it }
+                },
                 arguments = listOf(
                     androidx.navigation.navArgument("productId") { type = androidx.navigation.NavType.StringType }
                 )
@@ -174,6 +240,12 @@ fun MainScreen(authViewModel: AuthViewModel) {
             }
             composable(
                 route = Screen.CategoryProducts.route,
+                enterTransition = {
+                    fadeIn(tween(300)) + slideInHorizontally(tween(300)) { it }
+                },
+                popExitTransition = {
+                    fadeOut(tween(300)) + slideOutHorizontally(tween(300)) { it }
+                },
                 arguments = listOf(
                     androidx.navigation.navArgument("categoryId") { type = androidx.navigation.NavType.StringType },
                     androidx.navigation.navArgument("categoryName") { type = androidx.navigation.NavType.StringType }

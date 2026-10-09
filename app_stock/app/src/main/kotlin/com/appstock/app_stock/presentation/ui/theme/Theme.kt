@@ -28,6 +28,7 @@ val ErrorRed      = Color(0xFFEF4444)
 val DarkBackground = Color(0xFF121212)
 val DarkSurface    = Color(0xFF1E1E2E)
 val LightText      = Color(0xFFF0F0F0)
+val GrayOnDark     = Color(0xFFB3B3C6)   // texto secundario en oscuro (contraste legible)
 val DarkChip       = Color(0xFF2A2A3E)
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -62,7 +63,7 @@ private val DarkColorScheme = darkColorScheme(
     surfaceVariant     = DarkChip,
     onBackground       = LightText,
     onSurface          = LightText,
-    onSurfaceVariant   = MediumGray,
+    onSurfaceVariant   = GrayOnDark,
     error              = ErrorRed,
     onError            = White
 )

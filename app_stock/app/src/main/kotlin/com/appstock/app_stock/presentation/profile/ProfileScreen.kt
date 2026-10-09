@@ -46,7 +46,7 @@ fun ProfileScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(OrangeSurface)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             
@@ -113,7 +113,7 @@ fun ProfileScreen(
                             "Empleados de la Tienda",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = DarkText,
+                            color = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
                         )
                     }
@@ -122,12 +122,12 @@ fun ProfileScreen(
                         item {
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = CardDefaults.cardColors(containerColor = White),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 shape = RoundedCornerShape(16.dp)
                             ) {
                                 Text(
                                     "No tenés empleados registrados. Compartí tu código de tienda para que se unan.",
-                                    color = MediumGray,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 14.sp,
                                     modifier = Modifier.padding(16.dp)
                                 )
@@ -165,7 +165,7 @@ fun UserInfoCard(
             .fillMaxWidth()
             .shadow(4.dp, RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -178,10 +178,10 @@ fun UserInfoCard(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(OrangeChip),
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = OrangeRed)
+                        Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     
@@ -192,10 +192,10 @@ fun UserInfoCard(
                                 user?.apellido?.takeIf { it.isNotBlank() }
                             ).joinToString(" ").ifBlank { user?.email ?: "" }
                             
-                            Text(displayName, fontWeight = FontWeight.Bold, color = DarkText, fontSize = 16.sp)
+                            Text(displayName, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
                             
                             if (!user?.username.isNullOrBlank()) {
-                                Text("@${user?.username}", color = MediumGray, fontSize = 13.sp)
+                                Text("@${user?.username}", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                             }
 
                             Spacer(modifier = Modifier.height(4.dp))
@@ -240,7 +240,7 @@ fun UserInfoCard(
                                     editApellido = user?.apellido ?: ""
                                     editUsername = user?.username ?: ""
                                 }) {
-                                    Text("Cancelar", color = MediumGray)
+                                    Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Button(
@@ -271,7 +271,7 @@ fun UserInfoCard(
             }
             
             if (user?.role == "owner") {
-                Divider(modifier = Modifier.padding(vertical = 12.dp), color = MediumGray.copy(alpha = 0.2f))
+                Divider(modifier = Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.outlineVariant)
                 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -279,7 +279,7 @@ fun UserInfoCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Código de Tienda (Para Empleados)", color = MediumGray, fontSize = 12.sp)
+                        Text("Código de Tienda (Para Empleados)", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                         Text(
                             text = user.storeId,
                             fontWeight = FontWeight.SemiBold,
@@ -293,7 +293,7 @@ fun UserInfoCard(
                         clipboard.setPrimaryClip(clip)
                         Toast.makeText(context, "Código copiado", Toast.LENGTH_SHORT).show()
                     }) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", tint = MediumGray)
+                        Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -311,7 +311,7 @@ fun EmployeeCard(employee: User, onRoleChange: (String) -> Unit) {
             .fillMaxWidth()
             .shadow(2.dp, RoundedCornerShape(12.dp)),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier
@@ -319,7 +319,7 @@ fun EmployeeCard(employee: User, onRoleChange: (String) -> Unit) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.Store, contentDescription = null, tint = MediumGray, modifier = Modifier.size(24.dp))
+            Icon(Icons.Default.Store, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
             Spacer(modifier = Modifier.width(12.dp))
             
             Column(modifier = Modifier.weight(1f)) {
@@ -329,10 +329,10 @@ fun EmployeeCard(employee: User, onRoleChange: (String) -> Unit) {
                 ).joinToString(" ")
                 
                 val title = disp.ifBlank { employee.email }
-                Text(title, fontWeight = FontWeight.SemiBold, color = DarkText, fontSize = 14.sp)
+                Text(title, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
                 
                 if (disp.isNotBlank()) {
-                    Text(employee.email, color = MediumGray, fontSize = 11.sp)
+                    Text(employee.email, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                 }
 
                 Text(
@@ -342,7 +342,7 @@ fun EmployeeCard(employee: User, onRoleChange: (String) -> Unit) {
                         "disabled" -> "Bloqueado"
                         else -> employee.role
                     }, 
-                    color = MediumGray, 
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, 
                     fontSize = 12.sp
                 )
             }

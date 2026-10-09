@@ -50,13 +50,13 @@ fun StatCard(
     value: String,
     modifier: Modifier = Modifier,
     iconBgColor: Color = OrangeRed,
-    valueColor: Color = DarkText
+    valueColor: Color? = null
 ) {
     Card(
         modifier = modifier
             .shadow(4.dp, RoundedCornerShape(20.dp)),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -71,8 +71,13 @@ fun StatCard(
             ) {
                 Icon(icon, contentDescription = null, tint = iconBgColor, modifier = Modifier.size(22.dp))
             }
-            Text(value, fontWeight = FontWeight.Bold, fontSize = 22.sp, color = valueColor)
-            Text(label, fontSize = 12.sp, color = MediumGray)
+            Text(
+                value,
+                fontWeight = FontWeight.Bold,
+                fontSize = 22.sp,
+                color = valueColor ?: MaterialTheme.colorScheme.onSurface
+            )
+            Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -95,13 +100,13 @@ fun QuickAction(
             modifier = Modifier
                 .size(56.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(OrangeChip),
+                .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = label,
-                tint = OrangeRed,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.size(26.dp)
             )
         }
@@ -110,7 +115,7 @@ fun QuickAction(
             text = label,
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
-            color = DarkText
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
